@@ -30,14 +30,26 @@ from pathlib import Path
 from pkg_resources import resource_filename
 from modules.shared import state, opts
 from .general_utils import checksum, clean_gradio_path_strings, debug_print
-from basicsr.utils.download_util import load_file_from_url
 from .rich import console
 import shutil
 from threading import Thread
 from .http_client import get_http_client
+import requests
 
 SUPPORTED_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "bmp", "webp"]
 SUPPORTED_VIDEO_EXTENSIONS = ["mov", "mpeg", "mp4", "m4v", "avi", "mpg", "webm"]
+
+def load_file_from_url(url, model_dir=None, file_name=None):
+    os.makedirs(model_dir, exist_ok=True)
+    if file_name is None:
+        file_name = os.path.basename(url)
+    cached_file = os.path.join(model_dir, file_name)
+    if not os.path.exists(cached_file):
+        print(f"[Deforum] Downloading {url} to {cached_file}")
+        r = requests.get(url)
+        with open(cached_file, "wb") as f:
+            f.write(r.content)
+    return cached_file
 
 def convert_image(input_path, output_path):
     extension = get_extension_if_valid(input_path, SUPPORTED_IMAGE_EXTENSIONS)

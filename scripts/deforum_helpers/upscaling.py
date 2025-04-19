@@ -22,10 +22,22 @@ import subprocess
 from .frame_interpolation import clean_folder_name
 from .general_utils import duplicate_pngs_from_folder, checksum
 from .video_audio_utilities import vid2frames, ffmpeg_stitch_video, extract_number, media_file_has_audio
-from basicsr.utils.download_util import load_file_from_url
+import requests
 from .rich import console
 
 from modules.shared import opts
+
+def load_file_from_url(url, model_dir=None, file_name=None):
+    os.makedirs(model_dir, exist_ok=True)
+    if file_name is None:
+        file_name = os.path.basename(url)
+    cached_file = os.path.join(model_dir, file_name)
+    if not os.path.exists(cached_file):
+        print(f"[Deforum] Downloading {url} to {cached_file}")
+        r = requests.get(url)
+        with open(cached_file, "wb") as f:
+            f.write(r.content)
+    return cached_file
 
 # NCNN Upscale section START
 def process_ncnn_upscale_vid_upload_logic(vid_path, in_vid_fps, in_vid_res, out_vid_res, models_path, upscale_model, upscale_factor, keep_imgs, f_location, f_crf, f_preset, current_user_os):

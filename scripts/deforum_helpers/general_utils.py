@@ -18,7 +18,19 @@ import os
 import shutil
 import hashlib
 from modules.shared import opts
-from basicsr.utils.download_util import load_file_from_url
+import requests
+
+def load_file_from_url(url, model_dir=None, file_name=None):
+    os.makedirs(model_dir, exist_ok=True)
+    if file_name is None:
+        file_name = os.path.basename(url)
+    cached_file = os.path.join(model_dir, file_name)
+    if not os.path.exists(cached_file):
+        print(f"[Deforum] Downloading {url} to {cached_file}")
+        r = requests.get(url)
+        with open(cached_file, "wb") as f:
+            f.write(r.content)
+    return cached_file
 
 def debug_print(message):
     DEBUG_MODE = opts.data.get("deforum_debug_mode_enabled", False)
